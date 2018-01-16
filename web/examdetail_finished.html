@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml"><head>
+    <meta charset="utf-8">
+    <title>考试详情</title>
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>-->
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="lib/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="lib/footable/footable.core.css">
+    <link rel="stylesheet" href="stylesheets/my_style.css">
+
+
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="https://cdn.bootcss.com/vue/2.5.3/vue.js"></script>
+
+
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/theme.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/premium.css">
+    <link href="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.css" rel="stylesheet">
+
+</head>
+<body class=" theme-blue">
+
+<!-- Demo page code -->
+<style type="text/css">
+    #line-chart {
+        height:300px;
+        width:800px;
+        margin: 0px auto;
+        margin-top: 1em;
+    }
+    .navbar-default .navbar-brand, .navbar-default .navbar-brand:hover {
+        color: #fff;
+    }
+</style>
+
+<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+<!--[if lt IE 9]>
+<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+
+
+
+<div class="content">
+    <div class="header">
+
+        <h1 class="page-title">考试详情</h1>
+        <ul class="breadcrumb">
+            <li><a href="teacherindex.html">Home</a> </li>
+            <li><a href="examlist.html">考试管理</a> </li>
+            <li class="active">考试详情</li>
+        </ul>
+
+    </div>
+    <div class="main-content">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-content" id="statisticsinfo">
+                            <div class="row">
+                                <label class="form-label col-md-2">考试名称 </label>
+                                <input type="text" readonly class="col-md-8" v-model="statisticdata.testName"/>
+                                <div class="col-md-2 pull-right"><button class="btn btn-default" onclick="genePaper()">生成试卷</button></div>
+                            </div>
+
+                        <table class="footable table table-stripped toggle-arrow-tiny" data-page-size="8">
+                            <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th>学号</th>
+                                <th>班级</th>
+                                <th>年级</th>
+                                <th>得分</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="score in statisticdata.scores">
+                                <td>{{score.name}}</td>
+                                <td>{{score.studentId}}</td>
+                                <td>{{score.className}}</td>
+                                <td>{{score.grade}}</td>
+                                <td><a href="#" v-on:click="checkResult(score.userId)">{{score.score}}</a></td>
+                                <td><input v-if="score.score==null" class="student-gene" :id="score.userId" type="checkbox"></td>
+                            </tr>
+
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="5">
+                                    <ul class="pagination pull-right"></ul>
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+</div>
+
+
+<script src="lib/bootstrap/js/bootstrap.js"></script>
+<script src="lib/footable/footable.all.min.js"></script>
+
+<script src="https://cdn.bootcss.com/moment.js/2.18.1/moment-with-locales.min.js"></script>
+<link href="stylesheets/bootstrap-datetimepicker.min.css" rel="stylesheet">
+<script src="js/bootstrap-datetimepicker.min.js"></script>
+<script src="js/xlsx.full.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        var lib_name = $(".question-lib-name");
+        lib_name.click(text_click);
+
+        if(sessionStorage.getItem("type")!=1){
+            alert("没有权限!");
+            window.location.href="sign-in.html";
+        }
+        datainit();
+    });
+    function text_click(){
+        var clickfunction = this;
+        //0,获取当前的td节点
+        var td = $(this);
+        //获取id
+        var sampleId = $(this).val();
+        //alert(id);
+        //1,取出当前td中的文本内容保存起来
+        var text = $(this).text();
+        //2，清空td里边内同
+        td.html("");
+        //3,建立一个文本框，也就是建一个input节点
+        var input = $("<input>");
+        //4,设置文本框中值是保存起来的文本内容
+        input.attr("value",text);
+        //4.5让文本框可以相应键盘按下的事件
+        input.keyup(function(event){
+            //记牌器当前用户按下的键值
+            var myEvent = event || window.event;//获取不同浏览器中的event对象
+            var kcode = myEvent.keyCode;
+            //判断是否是回车键按下
+            if(kcode == 13){
+                var inputnode = $(this);
+                //获取当前文本框的内容
+                var inputext = inputnode.val();
+                //清空td里边的内容,然后将内容填充到里边
+                var tdNode = inputnode.parent();
+                tdNode.html(inputext);
+                //让td重新拥有点击事件
+                tdNode.click(text_click);
+                if(inputext != text){                    //只有当内容不一样时才进行保存
+                    //调用该方法与后台交互
+                    if(!sampleNameUpdate(sampleId, inputext, 'sampleAlterAction.action')){
+                        tdNode.html(text);
+                    }
+                }
+            }
+        });
+        //5，把文本框加入到td里边去
+        td.append(input);
+        //5.5让文本框里边的文章被高亮选中
+        //需要将jquery的对象转换成dom对象
+        var inputdom = input.get(0);
+        inputdom.select();
+        //6,需要清楚td上的点击事件
+        td.unbind("click");
+    }
+
+    var scores={};
+    var statisticsdata;
+    var vue;
+
+    function datainit(){
+        examId = window.location.search.substr(window.location.search.lastIndexOf("=")+1);
+        var testmanurl="http://47.100.125.54:8038/statistics/";
+        var requesturl = testmanurl+examId;
+
+        var getSta = $.ajax({
+            url:requesturl,
+            method:"get",
+            data:{
+              userId:sessionStorage.getItem("userId")
+            },
+            success:function (data) {
+                statisticsdata=data.statistics;
+            }
+        });
+        getSta.then(function(){
+            vue = new Vue({
+                el:'#statisticsinfo',
+                data:{
+                    statisticdata:statisticsdata,
+                },
+                methods:{
+                    checkResult:function(studentId){
+                        //console.log(studentId);
+                        window.location.href="examresult.html?studentId="+studentId+
+                            "&teacherId="+sessionStorage.getItem("userId")+
+                            "&testId="+statisticsdata.testId;
+                    }
+                }
+            });
+
+            $(".footable").footable();
+            $(function() {
+                var match = document.cookie.match(new RegExp('color=([^;]+)'));
+                if(match) var color = match[1];
+                if(color) {
+                    $('body').removeClass(function (index, css) {
+                        return (css.match (/\btheme-\S+/g) || []).join(' ')
+                    })
+                    $('body').addClass('theme-' + color);
+                }
+                $('[data-popover="true"]').popover({html: true});
+            });
+            $(function() {
+                var uls = $('.sidebar-nav > ul > *').clone();
+                uls.addClass('visible-xs');
+                $('#main-menu').append(uls.clone());
+            });
+            $("[rel=tooltip]").tooltip();
+            $(function() {
+                $('.demo-cancel-click').click(function(){return false;});
+            });
+        });
+    }
+
+    function genePaper() {
+        var $studentList = $(".student-gene");
+        var students = [];
+        for(var i = 0; i < $studentList.length; i++){
+            if($studentList[i].checked){
+                students.push($($studentList[i]).attr('id'));
+            }
+
+        }
+        if(students.length==1){
+            students = students[0];
+        }
+        console.log(students);
+        window.location.href="paper.html?testId="+examId+
+            "&teacher="+sessionStorage.getItem("userId")+
+            "&students="+students;
+    }
+</script>
+
+
+</body></html>

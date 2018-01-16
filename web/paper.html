@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>试卷</title>
+    <!--<link href="stylesheets/iconfont.css" rel="stylesheet" type="text/css" />-->
+    <link href="stylesheets/main.css" rel="stylesheet" type="text/css" />
+    <link href="stylesheets/test.css" rel="stylesheet" type="text/css" />
+
+</head>
+<body class=" theme-blue">
+<div class="content">
+    <!--nr start-->
+    <div class="test_main">
+        <div id="paperList" class="paperList">
+            <div  class="test">
+                <form v-for="paper in papers" action="" method="post">
+
+                    <div class="test_content">
+                        <div class="test_content_title">
+                            <h2>{{paper.name}}</h2>
+                            <p>
+                                <span>共</span><i class="content_lit">{{paper.questions.length}}</i><span>题</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="test_content_nr">
+                        <ul>
+
+                            <li :id="question.id"  v-for="(question,index) in paper.questions">
+                                <div class="test_content_nr_tt">
+                                    <i>{{index+1}}</i><span>({{question.score}}分)</span>{{question.content}}
+                                </div>
+
+                                <div class="test_content_nr_main">
+                                    <ul>
+
+                                        <li class="option" v-for="(option,index1) in question.options">
+
+                                            <label>
+                                                {{index1+1}}
+                                                <p class="ue" style="display: inline;">{{option.name}}</p>
+                                            </label>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                        </ul>
+                    </div>
+
+
+
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+    <!--nr end-->
+    <div class="foot"></div>
+</div>
+
+<script src="lib/jquery-1.11.1.min.js"></script>
+<script src="lib/jquery.easy-pie-chart.js"></script>
+<script src="https://cdn.bootcss.com/vue/2.5.3/vue.js"></script>
+
+<script>
+    function GetQueryString(name) {
+        var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+        var r = window.location.search.substr(1).match(reg);
+        if(r!=null)return unescape(r[2]); return null;
+    }
+    $(document).ready(function () {
+        var testId=GetQueryString("testId");
+        var teacher=GetQueryString("teacher");
+        var students=GetQueryString("students");
+        $.ajax({
+            url: "http://47.100.125.54:8048/paper/",
+            type: "post",
+            data:{
+                testId : testId,
+                teacher :teacher,
+                students : students
+            },
+            success: function (data) {
+                if(data.rcode == 0){
+                    alert("生成成功");
+                    console.log(data);
+                    new Vue({
+                        el:'#paperList',
+                        data:{
+                            papers:data.paper.papers,
+                            testId : data.paper.testId
+                        }
+                    });
+                }else{
+                    alert("生成失败："+data.rcode);
+                }
+            },
+            error:function(xhr,status,error){
+                alert("生成失败:"+xhr);
+            }
+        });
+
+    });
+</script>
+</body>
+</html>

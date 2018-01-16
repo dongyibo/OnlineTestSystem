@@ -1,0 +1,42 @@
+#content-main {
+    height: calc(100% - 50px);
+    overflow: hidden;
+}
+.content {
+    position: relative;
+    height: inherit;
+    min-height: 600px;
+    background: #fff;
+    margin: 0;
+    border-left: 1px solid #cccccc;
+    padding: 15px 15px 0px 15px;
+}
+
+#picker {
+    display: inline-block;
+    line-height: 1.428571429;
+    vertical-align: middle;
+    margin: 0 12px 0 0;
+}
+#picker .webuploader-pick {
+    padding: 6px 12px;
+    display: block;
+}
+
+#line-chart {
+    height:300px;
+    width:800px;
+    margin: 0px auto;
+    margin-top: 1em;
+}
+.navbar-default .navbar-brand, .navbar-default .navbar-brand:hover {
+    color: #fff;
+}
+
+.student-choose-list{
+    min-width : 600px
+}
+
+li{
+    list-style : none
+}

@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-bind="http://java.sun.com/xml/ns/persistence/orm"><head>
+    <meta charset="utf-8">
+    <title>考试详情</title>
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>-->
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="lib/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="lib/footable/footable.core.css">
+    <link rel="stylesheet" href="stylesheets/my_style.css">
+
+
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="https://cdn.bootcss.com/vue/2.5.3/vue.js"></script>
+
+
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/theme.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/premium.css">
+    <link href="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.css" rel="stylesheet">
+
+</head>
+<body class=" theme-blue">
+
+<!-- Demo page code -->
+<style type="text/css">
+    #line-chart {
+        height:300px;
+        width:800px;
+        margin: 0px auto;
+        margin-top: 1em;
+    }
+    .navbar-default .navbar-brand, .navbar-default .navbar-brand:hover {
+        color: #fff;
+    }
+</style>
+
+<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+<!--[if lt IE 9]>
+<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+
+
+<div class="content">
+    <div class="header">
+
+        <h1 class="page-title">考试详情</h1>
+        <ul class="breadcrumb">
+            <li><a href="teacherindex.html">Home</a> </li>
+            <li><a href="examlist.html">考试管理</a> </li>
+            <li class="active">考试详情</li>
+        </ul>
+
+    </div>
+    <div class="main-content">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-content" id="examinfo">
+
+                        <div class="col-md-2">
+                            <label class="form-label">考试名称 </label>
+                            <input type="text" class="form-control" v-model="examdata.testName" id="testNameinput"/>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label">开始时间：</label>
+                            <input type='text' class="form-control" id='datetimepicker1'/>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">结束时间：</label>
+                            <input type='text' class="form-control" id='datetimepicker2'/>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">题目数</label>
+                            <input type="text" class="form-control" id="quesNum">
+                        </div>
+                        <div class="col-md-12">
+                            题目列表
+                            <button class="btn btn-default" v-on:click="choosequeslib()"><i class="fa fa-plus"></i> 选择题库</button>
+                            <input type="text" style="display: none" id="qstlibId" onchange="getqstlib(this.value)"></input>
+                        </div>
+                        <table class="table" id="queslibTable" v-bind:style="{display:queslibdisplay}">
+                            <tr>
+                                <th>#</th>
+                                <th>题库名</th>
+                            </tr>
+                            <tr v-for="(lib,index) in libs">
+                                <td>{{index+1}}</td>
+                                <td><a href="#" v-on:click="selectlib(lib.libId)">{{lib.libName}}</a></td>
+                            </tr>
+
+                        </table>
+                        <table class="table" id="quesTable" v-bind:style="{display:queslistdisplay}">
+                            <thead>
+                            <tr>
+
+                                <th data-toggle="true" style="min-width:60px">题号</th>
+                                <th style="min-width: 600px">题目</th>
+                                <th>分值</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="(question,index) in examdata.questions">
+                                <td>
+                                    {{index+1}}
+                                </td>
+                                <td>{{question.content}}</td>
+                                <td><input type="text" class="form-control" style="width: 50px" v-model="question.score"/></td>
+                            </tr>
+
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="5">
+                                    <ul class="pagination pull-right"></ul>
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+
+
+
+                        <div class="col-md-4">
+                            考生列表
+                            <button class="btn btn-default" onclick="$(studentlistinput).click()"><i class="fa fa-plus"></i> 导入</button>
+                            <input type="file" style="display: none" id="studentlistinput" onchange="handleFile(this)"/>
+
+                        </div>
+                        <div class="col-md-2 pull-right"><button class="btn btn-default" onclick="genePaper()">生成试卷</button></div>
+                        <table class="footable table table-stripped toggle-arrow-tiny" data-page-size="8">
+                            <thead>
+                            <tr>
+                                <th>姓名</th>
+                                <th>邮箱</th>
+                                <th>学号</th>
+                                <th>班级</th>
+                                <th>年级</th>
+                                <th></th>
+
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr v-for="student in examdata.students">
+                                <td>{{student.name}}</td>
+                                <td>{{student.email}}</td>
+                                <td>{{student.studentId}}</td>
+                                <td>{{student.className}}</td>
+                                <td>{{student.grade}}</td>
+                                <td><input class="student-gene" :id="student.id" type="checkbox"></td>
+                            </tr>
+
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="5">
+                                    <ul class="pagination pull-right"></ul>
+                                </td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="col-md-6 text-right"><button class="btn btn-default" onclick="submitExam()">确认</button></div>
+        <div class="col-md-0 text-center"></div>
+        <div class="col-md-6 text-left"><button class="btn btn-default" onclick="window.location.href='examlist.html'">返回</button></div>
+    </div>
+</div>
+
+
+<script src="lib/bootstrap/js/bootstrap.js"></script>
+<script src="lib/footable/footable.all.min.js"></script>
+
+<script src="https://cdn.bootcss.com/moment.js/2.18.1/moment-with-locales.min.js"></script>
+<link href="stylesheets/bootstrap-datetimepicker.min.css" rel="stylesheet">
+<script src="js/bootstrap-datetimepicker.min.js"></script>
+<script src="js/xlsx.full.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        var lib_name = $(".question-lib-name");
+        lib_name.click(text_click);
+
+        if(sessionStorage.getItem("type")!=1){
+            alert("没有权限!");
+            window.location.href="sign-in.html";
+        }
+        datainit();
+    });
+    function text_click(){
+        var clickfunction = this;
+        //0,获取当前的td节点
+        var td = $(this);
+        //获取id
+        var sampleId = $(this).val();
+        //1,取出当前td中的文本内容保存起来
+        var text = $(this).text();
+        //2，清空td里边内同
+        td.html("");
+        //3,建立一个文本框，也就是建一个input节点
+        var input = $("<input>");
+        //4,设置文本框中值是保存起来的文本内容
+        input.attr("value",text);
+        //4.5让文本框可以相应键盘按下的事件
+        input.keyup(function(event){
+            //记牌器当前用户按下的键值
+            var myEvent = event || window.event;//获取不同浏览器中的event对象
+            var kcode = myEvent.keyCode;
+            //判断是否是回车键按下
+            if(kcode == 13){
+                var inputnode = $(this);
+                //获取当前文本框的内容
+                var inputext = inputnode.val();
+                //清空td里边的内容,然后将内容填充到里边
+                var tdNode = inputnode.parent();
+                tdNode.html(inputext);
+                //让td重新拥有点击事件
+                tdNode.click(text_click);
+                if(inputext != text){                    //只有当内容不一样时才进行保存
+                    //调用该方法与后台交互
+                    if(!sampleNameUpdate(sampleId, inputext, 'sampleAlterAction.action')){
+                        tdNode.html(text);
+                    }
+                }
+            }
+        });
+        //5，把文本框加入到td里边去
+        td.append(input);
+        //5.5让文本框里边的文章被高亮选中
+        //需要将jquery的对象转换成dom对象
+        var inputdom = input.get(0);
+        inputdom.select();
+        //6,需要清楚td上的点击事件
+        td.unbind("click");
+    }
+
+    var rABS = true; // true: readAsBinaryString ; false: readAsArrayBuffer
+    var students=[];
+    var examdata={};
+    var qstlibdata;
+    var examId;
+    var vue;
+    function handleFile(target) {
+        var f = target.files[0];
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var data = e.target.result;
+            if(!rABS) data = new Uint8Array(data);
+            var workbook = XLSX.read(data, {type: rABS ? 'binary' : 'array'});
+
+            var fromTo = '';
+            students=[];
+            // 遍历每张表读取
+            for (var sheet in workbook.Sheets) {
+                if (workbook.Sheets.hasOwnProperty(sheet)) {
+                    fromTo = workbook.Sheets[sheet]['!ref'];
+                    console.log(fromTo);
+                    students = students.concat(XLSX.utils.sheet_to_json(workbook.Sheets[sheet]));
+                }
+            }
+
+            console.log(students);
+            examdata.students=students;
+            $(".footable").footable();
+            /* DO SOMETHING WITH workbook HERE */
+        };
+        if(rABS) reader.readAsBinaryString(f);
+        else reader.readAsArrayBuffer(f);
+    }
+
+    function getexp(date){
+        return date.getFullYear()+"-"+(date.getMonth()+1)+"-"+date.getDate()+" "+date.getHours()+":"+date.getMinutes();
+    }
+
+    function datainit(){
+        examId = window.location.search.substr(window.location.search.lastIndexOf("=")+1);
+        var testmanurl="http://47.100.125.54:8035/test-man/";
+        var qsturl="http://47.100.125.54:8041/qstlib/";
+        var requesturl = testmanurl+examId;
+        if(examId=="new")requesturl="emptyExam";
+        var getExam = $.ajax({
+            url:requesturl,
+            method:"get",
+            success:function (data) {
+                if(examId=="new"){
+                    data=$.parseJSON(data);
+                }
+                examdata=data.test;
+                console.log(data);
+                console.log(examdata);
+            }
+        });
+        getExam.then(function(){
+            console.log(examdata);
+            vue = new Vue({
+                el:'#examinfo',
+                data:{
+                    examdata:examdata,
+                    queslistdisplay:"",
+                    queslibdisplay:"none",
+                    libs:"[]"
+
+                },
+                methods:{
+                    choosequeslib:function(){
+                        var thisvue = this;
+                        $.ajax({
+                            url:qsturl+"lib",
+                            method:"get",
+                            data:{
+                                userId: sessionStorage.getItem("userId")
+                            },
+                            success:function(data){
+                                thisvue.libs=data.libs;
+                                thisvue.queslistdisplay="none";
+                                thisvue.queslibdisplay="";
+                            }
+                        });
+                    },
+                    selectlib:function(libId){
+                        var ques=[];
+                        var thisvue = this;
+                        thisvue.examdata.libId=libId;
+                        $.ajax({
+                            url:qsturl+"question?libId="+libId,
+                            method:"get",
+                            success:function(data){
+                                data=data.questions;
+                                console.log(data);
+                                for(i in data){
+                                    var waitscque={};
+                                    waitscque.id=data[i].questionId;
+                                    waitscque.content=data[i].questionContent;
+                                    waitscque.score="";
+                                    ques.push(
+                                        waitscque
+                                    );
+                                }
+                            }
+                        }).then(function(){
+                            thisvue.examdata.questions=ques;
+                            thisvue.queslistdisplay="";
+                            thisvue.queslibdisplay="none";
+                        });
+                    }
+                }
+            });
+
+            $(".footable").footable();
+
+
+            $(function() {
+                var match = document.cookie.match(new RegExp('color=([^;]+)'));
+                if(match) var color = match[1];
+                if(color) {
+                    $('body').removeClass(function (index, css) {
+                        return (css.match (/\btheme-\S+/g) || []).join(' ')
+                    })
+                    $('body').addClass('theme-' + color);
+                }
+
+                $('[data-popover="true"]').popover({html: true});
+
+            });
+            $(function() {
+                var uls = $('.sidebar-nav > ul > *').clone();
+                uls.addClass('visible-xs');
+                $('#main-menu').append(uls.clone());
+            });
+            $("[rel=tooltip]").tooltip();
+            $(function() {
+                $('.demo-cancel-click').click(function(){return false;});
+            });
+            $(function () {
+                var picker1 = $('#datetimepicker1').datetimepicker({
+                    //format: 'yyyy-mm-dd hh:mm:ss',
+                    locale: moment.locale('zh-cn'),
+                    startDate:new Date()
+                });
+                var picker2 = $('#datetimepicker2').datetimepicker({
+                    //format: 'yyyy-mm-dd hh:mm:ss',
+                    locale: moment.locale('zh-cn'),
+                    startDate:new Date()
+                });
+                if (examdata.startTime != 0) {
+                    $('#datetimepicker1').val(getexp(new Date(examdata.startTime)));
+                    $('#datetimepicker2').val(getexp(new Date(examdata.endTime)));
+                }
+
+            });
+
+        });
+    }
+
+    function submitExam(){
+        var exam = {};
+
+        var url = "http://47.100.125.54:8035/test-man";
+        exam.userId="00001";
+        exam.testId=examId;
+        exam.testName=$('#testNameinput').val();
+        exam.startTime=new Date($('#datetimepicker1').val());
+        exam.endTime=new Date($('#datetimepicker2').val());
+        var quesNum = $("#quesNum").val();
+        if (!/^[0-9]*[1-9][0-9]*$/.test(quesNum)){
+            alert("题目数必须是整数！");
+            return;
+        }
+        exam.quesNum = quesNum;
+        exam.libId=vue.examdata.libId;
+        exam.questions=vue.examdata.questions;
+        exam.students=vue.examdata.students;
+
+        exam=JSON.stringify(exam);
+
+        if(examId=="new") {
+            $.ajax({
+                url:url+"",
+                method:"post",
+                data:exam,
+                contentType: "application/json; charset=utf-8",
+                success:function(data){
+                    alert("新建成功!");
+                    window.location.href="examlist.html";
+                }
+            });
+        }else{
+            $.ajax({
+                url:url+"",
+                method:"put",
+                data:exam,
+                contentType: "application/json; charset=utf-8",
+                success:function(data){
+                    alert("修改成功!");
+                    window.location.href="examlist.html";
+                }
+            });
+        }
+    }
+    
+    function genePaper() {
+        var $studentList = $(".student-gene");
+        var students = [];
+        for(var i = 0; i < $studentList.length; i++){
+            if($studentList[i].checked){
+                students.push($($studentList[i]).attr('id'));
+            }
+
+        }
+        if(students.length==1){
+            students = students[0];
+        }
+        console.log(students);
+        window.location.href="paper.html?testId="+examId+
+            "&teacher="+sessionStorage.getItem("userId")+
+            "&students="+students;
+    }
+</script>
+
+
+</body></html>

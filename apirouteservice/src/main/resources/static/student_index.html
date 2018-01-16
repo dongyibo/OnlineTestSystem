@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en" xmlns:v-bind="http://www.w3.org/1999/xhtml" xmlns:v-on="http://www.w3.org/1999/xhtml"><head>
+    <meta charset="utf-8">
+    <title>进行考试</title>
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>-->
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="lib/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="lib/footable/footable.core.css">
+    <link rel="stylesheet" href="stylesheets/my_style.css">
+
+
+    <script src="lib/jquery-1.11.1.min.js" type="text/javascript"></script>
+    <script src="lib/bootstrap/js/bootstrap.js"></script>
+    <script src="lib/layer/layer.js"></script>
+
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/theme.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/premium.css">
+
+    <link href="stylesheets/main.css" rel="stylesheet" type="text/css" />
+    <link href="stylesheets/iconfont.css" rel="stylesheet" type="text/css" />
+    <link href="stylesheets/test.css" rel="stylesheet" type="text/css" />
+    <style>
+        .hasBeenAnswer {
+            background: #5d9cec;
+            color:#fff;
+        }
+        .hasBeenMark {
+            background: #ec8306;
+            color:#fff;
+        }
+    </style>
+
+</head>
+<body class=" theme-blue">
+
+<!-- Demo page code -->
+
+<script type="text/javascript">
+    $(function() {
+        var match = document.cookie.match(new RegExp('color=([^;]+)'));
+        if(match) var color = match[1];
+        if(color) {
+            $('body').removeClass(function (index, css) {
+                return (css.match (/\btheme-\S+/g) || []).join(' ')
+            })
+            $('body').addClass('theme-' + color);
+        }
+
+        $('[data-popover="true"]').popover({html: true});
+
+    });
+</script>
+
+<script type="text/javascript">
+    $(function() {
+        var uls = $('.sidebar-nav > ul > *').clone();
+        uls.addClass('visible-xs');
+        $('#main-menu').append(uls.clone());
+    });
+
+</script>
+
+
+<div class="navbar navbar-default" role="navigation">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+        <a class="" href="index.html"><span class="navbar-brand"><span class="fa fa-paper-plane"></span> 在线考试支持系统</span></a></div>
+
+    <div id="user_profile" class="navbar-collapse collapse" style="height: 1px;">
+        <ul id="main-menu" class="nav navbar-nav navbar-right">
+            <li class="dropdown hidden-xs">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                    <span class="glyphicon glyphicon-user padding-right-small" style="position:relative;top: 3px;"></span>{{username}}
+                    <i class="fa fa-caret-down"></i>
+                </a>
+
+                <ul class="dropdown-menu">
+                    <li class="divider"></li>
+                    <li><a tabindex="-1" href="sign-in.html">Logout</a></li>
+                </ul>
+            </li>
+        </ul>
+
+    </div>
+</div>
+</div>
+
+
+<div class="content">
+
+    <div class="main-content">
+        <div id="test_view" class="main">
+            <!--nr start-->
+            <div id="record">
+
+                <div class="record-row">
+                    <div id="ques-total">
+
+                    </div>
+                </div>
+                <div class="record-row">
+                    <a class="plane-colored-btn btn record-confirm-btn" onclick="test_submit()">交卷</a>
+                </div>
+            </div>
+            <div  class="test_main row">
+                <div class="nr_left col-lg-11">
+                    <div class="test">
+                        <form action="" method="post">
+                            <div class="test_title">
+                                <font><input type="button" class="test_submit" name="test_jiaojuan" value="汇总" onclick=test_total()></font>
+                            </div>
+
+                            <div class="test_content">
+                                <div class="test_content_title">
+                                    <p>
+                                        <span>共</span><i class="content_lit">{{test.quesNum}}</i><span>题，</span><span>合计</span><i class="content_fs">100</i><span>分</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="test_content_nr">
+                                <div v-bind:id="question.id">
+                                    <div class="test_content_nr_tt">
+                                        <i>{{question.order + 1}}</i><span>({{question.score}}分)</span>{{question.description}}<b class="icon iconfont" >标注本题<input id="mark" onclick=markQue(this); type="checkbox"></b>
+                                    </div>
+
+                                    <div class="test_content_nr_main">
+                                        <ul>
+                                            <li class="option" v-for="(ques_option, index) in question.options">
+                                                <input type="checkbox" class="radioOrCheck"
+                                                       onclick=choose(this) v-bind:index="index + 1" v-bind:value="ques_option.id"
+                                                       v-bind:id="'0_answer_'+question.id+'_option_'+(index+1)"
+                                                ><p style="display: none">{{ques_option.id}}</p></input>
+
+                                                <label v-bind:for="'0_answer_'+question.id+'_option_'+(index+1)">
+                                                    {{index+1}}.
+                                                    <p class="ue" style="display: inline;">{{ques_option.name}}</p>
+                                                </label>
+                                            </li>
+
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="test_pages">
+                            <div>
+                                <span id="last-que" class="invalid" v-on:click="lastQue(this)">上一题</span><span id="next-que" v-on:click="nextQue(this)">下一题</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="lib/jquery.easy-pie-chart.js"></script>
+<!--时间js-->
+<script src="lib/jquery.countdown.js"></script>
+<script src="https://cdn.bootcss.com/vue/2.5.3/vue.js"></script>
+<script>
+
+    var answers = []; // 记录答案
+    var marked = []; // 记录标注
+    var optionAll = []; // 记录题目选项
+    var order = 0;
+    var passwd;
+    var quesNum;
+    var quesId;
+    var answerOfQue = []; // 本题的选项ID
+    var indexOfQue = []; // 本题的所选项的标记
+    var quesVue;
+
+
+    function updateAnswers(){
+        var isAdded = false;
+        for (var i = 0;i < answers.length;i = i + 1){
+            var ans = answers[i];
+            if (ans.id === quesId){
+                ans.options = answerOfQue.slice(0);
+                ans.index = indexOfQue.slice(0);
+                isAdded = true;
+                break;
+            }
+        }
+        if (!isAdded){
+            var newQue = {};
+            newQue.id = quesId;
+            newQue.order = order;
+            newQue.options = answerOfQue.slice(0);
+            newQue.index = indexOfQue.slice(0);
+            answers.push(newQue);
+        }
+    }
+
+    function updateOptions(qid, options){
+        var isFound = false;
+        for (var i = 0;i < optionAll.length;i++){
+            var op = optionAll[i];
+            if (op.qid === qid){
+                isFound = true;
+                return op.options;
+            }
+        }
+        if (!isFound){
+            var newOp = {};
+            newOp.qid = qid;
+            newOp.options = options.slice(0);
+            optionAll.push(newOp);
+            return options;
+        }
+    }
+
+    function check(id){
+        var isChecked = false;
+        for (var i = 0;i < marked.length;i++){
+            var q = marked[i];
+            if (q.id === id){
+                $("#mark").prop("checked", "checked");
+                $("#mark").addClass("marked");
+                isChecked = true;
+                break;
+            }
+        }
+        if (!isChecked){
+            $("#mark").removeAttr("checked");
+            $("#mark").removeClass("marked");
+        }
+    }
+
+    function getChoose(id){
+        var hasAnswer = false;
+        for (var i = 0;i < answers.length;i++){
+            if (id === answers[i].id){
+                answerOfQue = answers[i].options.slice(0);
+                indexOfQue = answers[i].index.slice(0);
+                hasAnswer = true;
+                break;
+            }
+        }
+        if (!hasAnswer){
+            answerOfQue = [];
+            indexOfQue = [];
+        }
+        $("[type='checkbox']").each(function () {
+            var index = parseInt($(this).attr("index"));
+            if ($.inArray(index, indexOfQue) === -1){
+                $(this).removeAttr("checked");
+                $(this).removeClass("checked");
+            } else {
+                $(this).prop("checked", true);
+                $(this).addClass("checked");
+            }
+        })
+    }
+
+    function getQue(obj) {
+        quesVue.openQue($(obj).attr("data-order"));
+        exitRecord();
+    }
+
+
+    $(document).ready(function() {
+        if (parseInt(sessionStorage.getItem("type")) !== 2) {
+            alert("没有权限！");
+            window.location.href = "sign-in.html";
+        }
+
+        new Vue({
+            el: '#user_profile',
+            data: {
+                username: sessionStorage.getItem("username")
+            }
+        });
+    });
+    //页面一打开就执行弹层
+    var testId = null;
+    var baseURL = "http://47.100.125.54:8037";
+    var userId = sessionStorage.getItem("userId");
+    layer.ready(function(){
+        layer.prompt({title: '请输入考试密码，并确认', formType: 1, btn: ['确认'], closeBtn: 0}, function(pass, index){
+            $.ajax({
+                url: baseURL+"/test",
+                type: "get",
+                data:{
+                    userId: userId,
+                    testCode: pass
+                },
+                async:false,
+                success: function (data) {
+                    if(data.rcode == 0){
+                        quesVue = new Vue({
+                           el: '#test_view',
+                           data: {
+                               test: data.test,
+                               question: data.test.question
+                           },
+                           methods:{
+                               lastQue: function(obj) {
+                                   if ($("#last-que").hasClass("invalid")) {
+
+                                   } else {
+                                       var thisVue = this;
+                                       $.ajax({
+                                           url: baseURL + "/test/" + (order - 1),
+                                           type: "get",
+                                           data: {
+                                               testCode: passwd
+                                           },
+                                           async: false,
+                                           success: function (data) {
+                                               if (data.rcode === 0) {
+                                                   thisVue.question = data.question;
+                                                   updateAnswers();
+                                                   order = order - 1;
+                                                   quesId = data.question.id;
+                                                   if (order === 0) {
+                                                       $("#last-que").addClass("invalid");
+                                                   } else {
+                                                       $("#last-que").removeClass("invalid");
+                                                   }
+                                                   $("#next-que").removeClass("invalid");
+                                                   check(quesId);
+                                                   getChoose(quesId);
+                                                   thisVue.question.options = updateOptions(quesId, data.question.options);
+                                               } else {
+                                                   alert(data.rcode);
+                                               }
+                                           },
+                                           error: function (xhr, status, error) {
+                                               alert(xhr);
+                                           }
+                                       });
+                                   }
+                               },
+                               nextQue: function(obj){
+                                   if ($("#next-que").hasClass("invalid")){
+
+                                   } else {
+                                       var thisVue = this;
+                                       $.ajax({
+                                           url: baseURL+"/test/" + (order + 1),
+                                           type: "get",
+                                           data:{
+                                               testCode: passwd
+                                           },
+                                           async:false,
+                                           success: function (data) {
+                                               if(data.rcode === 0){
+                                                   thisVue.question = data.question;
+                                                   updateAnswers();
+                                                   order = order + 1;
+                                                   quesId = data.question.id;
+                                                   if (order + 1 === quesNum){
+                                                       $("#next-que").addClass("invalid");
+                                                   } else {
+                                                       $("#next-que").removeClass("invalid");
+                                                   }
+                                                   $("#last-que").removeClass("invalid");
+                                                   check(quesId);
+                                                   getChoose(quesId);
+                                                   thisVue.question.options = updateOptions(quesId, data.question.options);
+                                               }else{
+                                                   alert(data.rcode);
+                                               }
+                                           },
+                                           error:function(xhr,status,error){
+                                               alert(xhr);
+                                           }
+                                       });
+                                   }
+                               },
+                               openQue: function(q){
+                                   var thisVue = this;
+                                   $.ajax({
+                                       url: baseURL+"/test/" + q,
+                                       type: "get",
+                                       data:{
+                                           testCode: passwd
+                                       },
+                                       async:false,
+                                       success: function (data) {
+                                           if(data.rcode === 0){
+                                               thisVue.question = data.question;
+                                               updateAnswers();
+                                               order = data.question.order;
+                                               quesId = data.question.id;
+                                               if (order + 1 === quesNum){
+                                                   $("#next-que").addClass("invalid");
+                                               } else {
+                                                   $("#next-que").removeClass("invalid");
+                                               }
+                                               if (order === 0){
+                                                   $("#last-que").addClass("invalid");
+                                               } else {
+                                                   $("#last-que").removeClass("invalid");
+                                               }
+                                               check(quesId);
+                                               getChoose(quesId);
+                                               thisVue.question.options = updateOptions(quesId, data.question.options);
+                                           }else{
+                                               alert(data.rcode);
+                                           }
+                                       },
+                                       error:function(xhr,status,error){
+                                           alert(xhr);
+                                       }
+                                   });
+                               }
+                           }
+                        });
+                        layer.close(index);
+                        testId = data.test.testId;
+                        passwd = pass;
+                        quesNum = data.test.quesNum;
+                        quesId = data.test.question.id;
+                        updateOptions(quesId, data.test.question.options);
+                    }else{
+                        var r = parseInt(data.rcode);
+                        switch (r){
+                            case 1:
+                                alert("考试密码错误！");
+                                break;
+                            case 0x300:
+                                alert("考试名额已满！");
+                                break;
+                            case 0x301:
+                                alert("不在考试时间内！");
+                                break;
+                        }
+                    }
+                },
+                error:function(xhr,status,error){
+                    alert(xhr);
+                }
+            });
+        });
+    });
+    window.jQuery(function($) {
+        "use strict";
+
+        $('time').countDown({
+            with_separators : false
+        });
+        $('.alt-1').countDown({
+            css_class : 'countdown-alt-1'
+        });
+        $('.alt-2').countDown({
+            css_class : 'countdown-alt-2'
+        });
+
+    });
+
+    function choose(obj) {
+        if ($(obj).hasClass("checked")) {
+            for (var i = 0;i < answerOfQue.length;i = i + 1){
+                if (parseInt($(obj).attr("value")) === answerOfQue[i]){
+                    answerOfQue.splice(i, 1);
+                    break;
+                }
+            }
+            console.log(answerOfQue);
+            for (i = 0;i < indexOfQue.length;i = i + 1){
+                if (parseInt($(obj).attr("index")) === indexOfQue[i]){
+                    indexOfQue.splice(i, 1);
+                    break;
+                }
+            }
+            $(obj).removeClass("checked");
+        } else {
+            var value = $(obj).attr("value");
+            var index = $(obj).attr("index");
+            answerOfQue.push(parseInt(value));
+            indexOfQue.push(parseInt(index));
+            $(obj).addClass("checked");
+        }
+    }
+    function markQue(obj) {
+        if ($(obj).hasClass("marked")){
+            for (var i = 0;i < marked.length;i = i + 1){
+                var mQues = marked[i];
+                if (mQues.id === quesId){
+                    marked.splice(i, 1);
+                    break;
+                }
+            }
+            $(obj).removeClass("marked");
+        } else {
+            var ques = {};
+            ques.id = quesId;
+            ques.order = order;
+            marked.push(ques);
+            $(obj).addClass("marked");
+        }
+    }
+
+    function exitRecord(){
+        $("#record").fadeOut("fast");
+        $("#mask").css({ display: 'none' });
+    }
+
+    function isMarked(order){
+        for (var i = 0;i < marked.length;i++){
+            var q = marked[i];
+            if (order === q.order){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function getAnswers(order){
+        var index = [];
+        for (var i = 0;i < answers.length;i++){
+            if (order === answers[i].order){
+                index = answers[i].index;
+                break;
+            }
+        }
+        var result = "";
+        for (i = 0;i < index.length;i++){
+            result = result + index[i];
+            if (i !== index.length - 1){
+                result = result + ",";
+            }
+        }
+        return result;
+    }
+
+    function test_total() {
+        updateAnswers();
+        $("body").append("<div id='mask'></div>");
+        $("#mask").addClass("mask").fadeIn("slow");
+        $("#record").fadeIn("slow");
+        $("#ques-total").html("");
+        for (var i = 0;i < quesNum;i++){
+            if (isMarked(i)){
+                $("#ques-total").append("<div class='que-grid marked'>" + "<a href='javascript:void(0)' data-order='"+i+"' onclick='getQue(this)'>"+ (i+1)
+                    + "<div class='que-ans'>"+getAnswers(i)+"</div>" + "</a></div>");
+            } else {
+                $("#ques-total").append("<div class='que-grid'>" + "<a href='javascript:void(0)' data-order='"+i+"' onclick='getQue(this)'>"+ (i+1)
+                + "<div class='que-ans'>"+getAnswers(i)+"</div>" + "</a></div>");
+            }
+        }
+    }
+
+    function test_submit(){
+        var test = {};
+        test.userId = userId;
+        test.testId = testId;
+        test.userOptions = [];
+        for (var i = 0;i < answers.length;i++){
+            var op = {};
+            op.id = answers[i].id;
+            op.options = answers[i].options.slice(0);
+            test.userOptions.push(op);
+        }
+        test = JSON.stringify(test);
+        $.ajax({
+            url: baseURL+"/test",
+            type: "post",
+            contentType: "application/json; charset=utf-8",
+            data:test,
+            success: function (data) {
+                if(data.rcode === 0){
+                    alert("提交成功");
+                    window.location.href="sign-in.html";
+                }else{
+                    var r = parseInt(data.rcode);
+                    switch (r){
+                        case 1:
+                            alert("请求超时！");
+                            break;
+                        case 4:
+                            alert("邮件发送失败！请重新提交。");
+                            break;
+                    }
+                }
+            },
+            error:function(xhr,status,error){
+                alert(xhr);
+            }
+        });
+    };
+</script>
+
+
+</body></html>

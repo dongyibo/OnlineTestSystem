@@ -1,0 +1,6 @@
+FROM frolvlad/alpine-oraclejdk8:slim
+VOLUME /tmp
+ADD test-0.0.1.jar test.jar
+RUN sh -c 'touch /test.jar'
+EXPOSE 8037
+ENTRYPOINT [ "java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/test.jar" ]

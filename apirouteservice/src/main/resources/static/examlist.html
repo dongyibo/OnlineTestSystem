@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en" xmlns:v-on="http://www.w3.org/1999/xhtml"><head>
+    <meta charset="utf-8">
+    <title>考试管理</title>
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>-->
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="lib/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="stylesheets/my_style.css">
+
+    <script src="https://cdn.bootcss.com/vue/2.5.3/vue.js"></script>
+    <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/theme.css">
+    <link rel="stylesheet" type="text/css" href="stylesheets/premium.css">
+
+</head>
+<body class=" theme-blue">
+
+<!-- Demo page code -->
+
+
+
+<!--[if lt IE 7 ]> <body class="ie ie6"> <![endif]-->
+<!--[if IE 7 ]> <body class="ie ie7 "> <![endif]-->
+<!--[if IE 8 ]> <body class="ie ie8 "> <![endif]-->
+<!--[if IE 9 ]> <body class="ie ie9 "> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]><!-->
+
+<!--<![endif]-->
+
+
+<div class="content">
+    <div class="header">
+
+        <h1 class="page-title">考试列表</h1>
+        <ul class="breadcrumb">
+            <li><a href="teacherindex.html">Home</a> </li>
+            <li class="active">考试列表</li>
+        </ul>
+
+    </div>
+    <div class="main-content">
+        <button class="btn btn-default" onclick="createExam()"><i class="fa fa-plus"></i> 创建考试</button>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>考试名称</th>
+                <th>状态</th>
+                <th>开始时间</th>
+                <th>结束时间</th>
+                <th style="width: 3.5em;"></th>
+            </tr>
+            </thead>
+            <tbody id="examlist">
+            <tr v-for="exam in exams">
+                <td><a v-on:click="showExam(exam.id,new Date()>exam.startTime)" href="#" role="button" data-toggle="modal">{{exam.name}}</a></td>
+                <td>{{computestate(exam.startTime,exam.endTime)}}</td>
+                <td>{{new Date(exam.startTime).toLocaleString()}}</a></td>
+                <td>{{new Date(exam.endTime).toLocaleString()}}</td>
+                <td>
+                    <a href="#" role="button" data-toggle="modal" v-on:click="deleteExam(exam.id)"><i class="fa fa-trash-o"></i></a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+
+
+    </div>
+</div>
+
+
+<script src="lib/bootstrap/js/bootstrap.js"></script>
+
+<script>
+    var url = "http://47.100.125.54:8035/test-man/";
+    function createExam(){
+        window.location.href="examdetail.html?id=new";
+    }
+    $(document).ready(function(){
+        $.ajax({
+            url:url+"list",
+            method:"get",
+            data:{
+                userId:sessionStorage.getItem("userId")
+            },
+            success:function (result) {
+                var vue = new Vue({
+                    el:"#examlist",
+                    data:{
+                        exams:result.tests
+                    },
+                    methods:{
+                        computestate:function (startTime,endTime) {
+                            var nowTime = new Date();
+                            if(nowTime<startTime){
+                                return "尚未开始";
+                            }else if(nowTime<endTime){
+                                return "进行中";
+                            }else{
+                                return "已结束";
+                            }
+                        },
+                        showExam:function(examId,started){
+                            if(started) {
+                                window.location.href = "examdetail_finished.html?examId=" + examId;
+                            }else{
+                                window.location.href = "examdetail.html?examId=" + examId;
+                            }
+                        },
+                        deleteExam:function(examId){
+                            alert(examId);
+                            $.ajax({
+                                url:url+examId,
+                                method:"delete",
+                                success:function (data) {
+                                    
+                                }
+                            }).then(function () {
+                                window.location.reload();
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    });
+</script>
+
+</body></html>

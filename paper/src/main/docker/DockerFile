@@ -1,0 +1,6 @@
+FROM frolvlad/alpine-oraclejdk8:slim
+VOLUME /tmp
+ADD paper-0.0.1.jar paper.jar
+RUN sh -c 'touch /paper.jar'
+EXPOSE 8048
+ENTRYPOINT [ "java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/paper.jar" ]

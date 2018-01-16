@@ -1,0 +1,6 @@
+FROM frolvlad/alpine-oraclejdk8:slim
+VOLUME /tmp
+ADD statistics-0.0.1.jar statistics.jar
+RUN sh -c 'touch /statistics.jar'
+EXPOSE 8038
+ENTRYPOINT [ "java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/statistics.jar" ]
